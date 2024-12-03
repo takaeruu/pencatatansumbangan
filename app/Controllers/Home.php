@@ -216,6 +216,125 @@ public function register()
     }
 }
 
+
+public function profile()
+    {
+        if (session()->get('id') > 0) {
+            helper('permission'); // Pastikan helper dimuat
+
+            $model = new M_ps();
+           
+            $where3 = array('id_setting' => '1');
+            $data['yogi'] = $model->getWhere1('setting', $where3)->getRow();
+
+            $where = array('id_user' => session()->get('id'));
+            $data['yoga'] = $model->getwhere('user', $where);
+            helper('permission'); // Pastikan helper dimuat
+
+            echo view('header', $data);
+            echo view('menu', $data);
+            echo view('profile', $data);
+            echo view('footer');
+        } else {
+            return redirect()->to('home/login');
+        }
+    }
+    public function editfoto()
+    {
+        $model = new M_ps();
+        
+        $userData = $model->getById(session()->get('id'));
+
+        if ($this->request->getFile('foto')) {
+
+            $file = $this->request->getFile('foto');
+            $newFileName = $file->getRandomName();
+            $file->move(ROOTPATH . 'public/img', $newFileName);
+
+            if ($userData->foto && file_exists(ROOTPATH . 'public/img/' . $userData->foto)) {
+                unlink(ROOTPATH . 'public/img/' . $userData->foto);
+            }
+            $userId = ['id_user' => session()->get('id')];
+            $userData = ['foto' => $newFileName];
+            $model->edit('user', $userData, $userId);
+        }
+        return redirect()->to('home/profile');
+    }
+    public function aksi_e_profile()
+    {
+        if (session()->get('id') > 0) {
+            $model = new M_ps();
+           
+            $yoga = $this->request->getPost('username');
+            $id = $this->request->getPost('id');
+
+            $where = array('id_user' => $id); // Jika id_user adalah kunci utama untuk menentukan record
+
+
+            $isi = array(
+                'username' => $yoga,
+            );
+
+            $model->edit('user', $isi, $where);
+            return redirect()->to('home/profile');
+            // print_r($yoga);
+            // print_r($id);
+        } else {
+            return redirect()->to('home/login');
+        }
+    }
+    public function changepassword()
+    {
+        if (session()->get('id') > 0) {
+
+            $model = new M_ps();
+            
+            $where3 = array('id_setting' => '1');
+            $data['yogi'] = $model->getWhere1('setting', $where3)->getRow();
+            $where = array('id_user' => session()->get('id'));
+            $data['darren'] = $model->getwhere('user', $where);
+            helper('permission'); // Pastikan helper dimuat
+
+            echo view('header', $data);
+            echo view('menu', $data);
+            echo view('changepassword', $data);
+            echo view('footer');
+        } else {
+            return redirect()->to('home/login');
+        }
+    }
+    public function aksi_changepass()
+    {
+        $model = new M_ps();
+        $oldPassword = $this->request->getPost('old');
+        $newPassword = $this->request->getPost('new');
+        $userId = session()->get('id');
+
+        // Dapatkan password lama dari database
+        $currentPassword = $model->getPassword($userId);
+
+        // Verifikasi apakah password lama cocok
+        if (md5($oldPassword) !== $currentPassword) {
+            // Set pesan error jika password lama salah
+            session()->setFlashdata('error', 'Password lama tidak valid.');
+            return redirect()->back()->withInput();
+        }
+
+        // Update password baru
+        $data = [
+            'password' => md5($newPassword),
+            'updated_by' => $userId,
+            'updated_at' => date('Y-m-d H:i:s')
+        ];
+        $where = ['id_user' => $userId];
+
+        $model->edit('user', $data, $where);
+
+        // Set pesan sukses
+        session()->setFlashdata('success', 'Password berhasil diperbarui.');
+        return redirect()->to('home/changepassword');
+    }
+
 public function program(){
 
     $model = new M_ps;
@@ -235,6 +354,24 @@ $model->logActivity($activityLog);
     echo view('footer');
 }
 
+public function t_program(){
+
+    $model = new M_ps;
+    $data['oke'] = $model->tampil('program');
+    $where = array('id_setting' => '1');
+    $data['yogi'] = $model->getWhere1('setting', $where)->getRow();
+    $id_user = session()->get('id');
+$activityLog = [
+    'id_user' => $id_user,
+    'menu' => 'Masuk ke Tambah Program',
+    'time' => date('Y-m-d H:i:s')
+];
+$model->logActivity($activityLog);
+    echo view('header', $data);
+    echo view('menu');
+    echo view('t_program', $data);
+}
+
 
 public function aksi_t_program()
 {
@@ -252,6 +389,33 @@ public function aksi_t_program()
     } else {
         return redirect()->to('home/login');
     }
+}
+
+
+public function e_program($id_program) {  // Terima parameter id_user
+    $model = new M_ps;
+    
+    // Mengambil data setting
+    $where = array('id_setting' => '1');
+    $data['yogi'] = $model->getWhere1('setting', $where)->getRow();
+    
+    // Ambil data user berdasarkan id_user yang diterima
+    $whereProgram = array('id_program' => $id_program);
+    $data['oke'] = $model->getWhere1('program', $whereProgram)->getRow();  // Mengambil data program spesifik berdasarkan ID
+
+    // Log aktivitas
+    $id_program_session = session()->get('id');
+    $activityLog = [
+        'id_program' => $id_program_session,
+        'menu' => 'Masuk ke Edit program',
+        'time' => date('Y-m-d H:i:s')
+    ];
+    $model->logActivity($activityLog);
+
+    // Memuat view
+    echo view('header', $data);
+    echo view('menu');
+    echo view('e_program', $data);
 }
 
 public function aksi_e_program()
@@ -408,7 +572,7 @@ public function aksi_e_program()
         return redirect()->to('Home/program');
     }
 
-
+    
 
 public function donasi()
 {
@@ -454,6 +618,25 @@ public function donasi()
     echo view('footer');
 }
 
+public function t_donasi(){
+
+    $model = new M_ps;
+    $where = array('id_setting' => '1');
+    $data['yogi'] = $model->getWhere1('setting', $where)->getRow();
+    $data['oke'] = $model->join2('donasi', 'program', 'donasi.id_program=program.id_program');
+    $data['yoga'] = $model->tampil('program');
+    $id_user = session()->get('id');
+$activityLog = [
+    'id_user' => $id_user,
+    'menu' => 'Masuk ke Tambah User',
+    'time' => date('Y-m-d H:i:s')
+];
+$model->logActivity($activityLog);
+    echo view('header', $data);
+    echo view('menu');
+    echo view('t_donasi', $data);
+}
+
 
 
 
@@ -497,6 +680,31 @@ public function aksi_t_donasi()
     }
 }
 
+public function e_donasi($id_donasi) {  // Terima parameter id_user
+    $model = new M_ps;
+    
+    // Mengambil data setting
+    $where = array('id_setting' => '1');
+    $data['yogi'] = $model->getWhere1('setting', $where)->getRow();
+    
+    // Ambil data user berdasarkan id_user yang diterima
+    $whereDonasi = array('id_donasi' => $id_donasi);
+    $data['oke'] = $model->getWhere1('donasi', $whereDonasi)->getRow();  // Mengambil data user spesifik berdasarkan ID
+    $data['yoga'] = $model->tampil('program');
+    // Log aktivitas
+    $id_user_session = session()->get('id');
+    $activityLog = [
+        'id_user' => $id_user_session,
+        'menu' => 'Masuk ke Edit Donasi',
+        'time' => date('Y-m-d H:i:s')
+    ];
+    $model->logActivity($activityLog);
+
+    // Memuat view
+    echo view('header', $data);
+    echo view('menu');
+    echo view('e_donasi', $data);
+}
 
 public function aksi_e_donasi()
 {
@@ -542,6 +750,144 @@ public function aksi_e_donasi()
         return redirect()->to('home/login');
     }
 }
+
+
+public function user(){
+    $model = new M_ps;
+    $where = array('id_setting' => '1');
+    $data['yogi'] = $model->getWhere1('setting', $where)->getRow();
+    $data['oke'] = $model->tampil('user');
+
+
+    $id_user = session()->get('id');
+    $activityLog = [
+        'id_user' => $id_user,
+        'menu' => 'Masuk ke User',
+        'time' => date('Y-m-d H:i:s')
+    ];
+    $model->logActivity($activityLog);
+    echo view('header', $data);
+    echo view ('menu');
+    echo view ('user', $data);
+    echo view ('footer');
+}
+
+
+
+public function t_user(){
+
+    $model = new M_ps;
+    $where = array('id_setting' => '1');
+    $data['yogi'] = $model->getWhere1('setting', $where)->getRow();
+    $data['yoga'] = $model->tampil('user');
+    $id_user = session()->get('id');
+$activityLog = [
+    'id_user' => $id_user,
+    'menu' => 'Masuk ke Tambah User',
+    'time' => date('Y-m-d H:i:s')
+];
+$model->logActivity($activityLog);
+    echo view('header', $data);
+    echo view('menu');
+    echo view('t_user', $data);
+}
+
+
+public function aksi_t_user()
+{
+if(session()->get('id') > 0){
+    $username = $this->request->getPost('username');
+    $nis = $this->request->getPost('nis');
+    $level = $this->request->getPost('level');
+
+    // Menggunakan MD5 untuk hash password "sph"
+    $password = md5('sph');
+
+    $darren = array(
+        'username' => $username,
+        'nis' => $nis,
+        'password' => $password,  // Menyimpan password yang telah di-hash
+        'level' => $level,
+    );
+
+    $model = new M_ps;
+    $model->tambah('user', $darren); // Menyimpan data user ke database
+    return redirect()->to('home/user');
+} else {
+    return redirect()->to('home/login');
+}
+}
+public function e_user($id_user) {  // Terima parameter id_user
+    $model = new M_ps;
+    
+    // Mengambil data setting
+    $where = array('id_setting' => '1');
+    $data['yogi'] = $model->getWhere1('setting', $where)->getRow();
+    
+    // Ambil data user berdasarkan id_user yang diterima
+    $whereUser = array('id_user' => $id_user);
+    $data['oke'] = $model->getWhere1('user', $whereUser)->getRow();  // Mengambil data user spesifik berdasarkan ID
+
+    // Log aktivitas
+    $id_user_session = session()->get('id');
+    $activityLog = [
+        'id_user' => $id_user_session,
+        'menu' => 'Masuk ke Edit User',
+        'time' => date('Y-m-d H:i:s')
+    ];
+    $model->logActivity($activityLog);
+
+    // Memuat view
+    echo view('header', $data);
+    echo view('menu');
+    echo view('e_user', $data);
+}
+
+
+public function aksi_e_user()
+{
+if(session()->get('id') > 0){
+    $username = $this->request->getPost('username');
+    $level = $this->request->getPost('level');
+    $id = $this->request->getPost('id_user');
+        
+    $where = array('id_user' => $id);
+
+    $isi = array(
+        'username' => $username,
+        'level' => $level,
+    );
+
+    $model = new M_ps;
+    $model->edit('user', $isi, $where); // Menyimpan data user ke database
+    return redirect()->to('home/user');
+} else {
+    return redirect()->to('home/login');
+}
+}
+
+public function hapus_user($id)
+    {
+        $model = new M_ps();
+        // $this->logdonasiActivity('Menghapus Pemesanan Permanent');
+        $where = array('id_user' => $id);
+        $model->hapus('user', $where);
+    
+        return redirect()->to('Home/user');
+    }
+public function resetpassword($id)
+    {
+        $model = new M_ps();
+        $id_user = session()->get('id');
+    $activityLog = [
+        'id_user' => $id_user,
+        'menu' => 'Melakukan Reset Password',
+        'time' => date('Y-m-d H:i:s')
+    ];
+    $model->logActivity($activityLog);
+        $model->resetPassword($id);
+        return redirect()->to('home/user');
+    }
 
 
 

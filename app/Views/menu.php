@@ -27,7 +27,9 @@
                             </a>
                         </li>
 
-
+                        <?php
+      if (session()->get('level') == 'admin' || session()->get('level') == 'osis'){
+        ?>
                         <!-- Menu -->
                         <li class="sidebar-item <?= ($currentUri == 'home/program') ? 'active' : '' ?>">
                             <a href="<?= base_url('home/program') ?>" class='sidebar-link'>
@@ -35,10 +37,27 @@
                                 <span>Program</span>
                             </a>
                         </li>
+
+                        <?php 
+      } else {
+
+      }
+?>
+
                         <li class="sidebar-item <?= ($currentUri == 'home/donasi') ? 'active' : '' ?>">
                             <a href="<?= base_url('home/donasi') ?>" class='sidebar-link'>
                                 <i class="fa fa-donate"></i>
                                 <span>Donasi</span>
+                            </a>
+                        </li>
+
+                        <?php
+      if (session()->get('level') == 'admin'){
+        ?>
+                        <li class="sidebar-item <?= ($currentUri == 'home/user') ? 'active' : '' ?>">
+                            <a href="<?= base_url('home/user') ?>" class='sidebar-link'>
+                                <i class="fa fa-user"></i>
+                                <span>User</span>
                             </a>
                         </li>
 
@@ -87,6 +106,13 @@
         <span>Log Activity</span>
     </a>
 </li>
+
+<?php 
+      } else {
+
+      }
+?>
+
 
 
                         <li class="sidebar-item">

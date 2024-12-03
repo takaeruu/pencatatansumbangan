@@ -7,15 +7,15 @@
                 </div>
                 
                 <!-- Button to trigger Modal for Adding program -->
-                <a class="nav-link text-Headings my-2" href="#" data-bs-toggle="modal" data-bs-target="#addUserModal">
-                    <span class="fa fa-plus-circle" style="font-size: 30px;"></span> Tambah PROGRAM
-                </a>
+                <button class="btn btn-warning" id="btnTambahProgram" onclick="loadTambahProgramForm()">
+                    <i class="fe fe-plus"></i> Tambah Program
+                </button>
 
                 <!-- Card Content with Table -->
                 <div class="card-content">
                     <div class="card-body">
                         <!-- Table with outer spacing -->
-                        <table class="table table-lg">
+                        <table class="table table-lg" id="programTableContent">
                             <thead>
                                 <tr>
                                     <th>NO</th>
@@ -35,38 +35,13 @@
                                     <td><?= ($oke->donasi_terkumpul) ?></td>
                                     <td>
                                         <!-- Edit Button with Modal Trigger -->
-                                        <a href="#" data-bs-toggle="modal" data-bs-target="#editUserModal-<?= $oke->id_program ?>">
-                                            <button class="btn btn-primary">Edit / Detail</button>
-                                        </a>
+                                        <button class="btn btn-warning" onclick="loadEditProgramForm(<?= $oke->id_program ?>)">
+                                            <i class="now-ui-icons ui-1_check"></i> Edit / Detail
+                                        </button>
+
                                         <a href="<?= base_url('home/hapus_program/'.$oke->id_program) ?>">
                                             <button class="btn btn-info">Delete</button>
                                         </a>
-
-                                        <!-- Modal for Editing program -->
-                                        <div class="modal fade" id="editUserModal-<?= $oke->id_program ?>" tabindex="-1" aria-labelledby="editUserModalLabel-<?= $oke->id_program ?>" aria-hidden="true">
-                                            <div class="modal-dialog">
-                                                <div class="modal-content">
-                                                    <div class="modal-header">
-                                                        <h5 class="modal-title" id="editUserModalLabel-<?= $oke->id_program ?>">Edit program</h5>
-                                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                                    </div>
-                                                    <div class="modal-body">
-                                                        <!-- Form to Edit program -->
-                                                        <form action="<?= base_url('home/aksi_e_program') ?>" method="POST">
-                                                            <div class="mb-3">
-                                                                <label for="editNamaprogram-<?= $oke->id_program ?>" class="form-label">Nama program</label>
-                                                                <input type="text" class="form-control" id="editNamaprogram-<?= $oke->id_program ?>" name="nama_program" value ="<?= $oke->nama_program ?>" required>
-                                                            </div>
-                                                            <div class="modal-footer">
-                                                            <input type="hidden" name="id" value="<?= $oke->id_program ?>">
-                                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
-                                                                <button type="submit" class="btn btn-primary">Simpan Perubahan</button>
-                                                            </div>
-                                                        </form>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
                                     </td>
                                 </tr>
                             <?php } ?>
@@ -79,60 +54,38 @@
     </div>
 </section>
 
-<!-- Modal for Adding program -->
-<div class="modal fade" id="addUserModal" tabindex="-1" aria-labelledby="addUserModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="addUserModalLabel">Tambah program</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <!-- Form to Add program -->
-                <form action="<?= base_url('home/aksi_t_program') ?>" method="POST">
-                    <div class="mb-3">
-                        <label for="namaprogram" class="form-label">Nama program</label>
-                        <input type="text" class="form-control" id="namaprogram" name="nama_program" required>
-                    </div>
-                    
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
-                        <button type="submit" class="btn btn-primary">Tambah program</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-</div>
 
+<div id="dynamicContent"></div>
 <!-- Include Bootstrap JavaScript if not already included -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-    document.getElementById('hargaprogram').addEventListener('input', function(e) {
-        let value = e.target.value.replace(/[^,\d]/g, '');
-        if (value) {
-            e.target.value = formatRupiah(value);
-        }
-    });
+  // Format input untuk harga program
+document.getElementById('hargaprogram').addEventListener('input', function(e) {
+    let value = e.target.value.replace(/[^,\d]/g, '');
+    if (value) {
+        e.target.value = formatRupiah(value);
+    }
+});
 
-    function formatRupiah(angka, prefix = "Rp ") {
-        let number_string = angka.replace(/[^,\d]/g, '').toString(),
-            split = number_string.split(','),
-            sisa = split[0].length % 3,
-            rupiah = split[0].substr(0, sisa),
-            ribuan = split[0].substr(sisa).match(/\d{3}/gi);
+// Format rupiah untuk input harga program
+function formatRupiah(angka, prefix = "Rp ") {
+    let number_string = angka.replace(/[^,\d]/g, '').toString(),
+        split = number_string.split(','),
+        sisa = split[0].length % 3,
+        rupiah = split[0].substr(0, sisa),
+        ribuan = split[0].substr(sisa).match(/\d{3}/gi);
 
-        if (ribuan) {
-            let separator = sisa ? '.' : '';
-            rupiah += separator + ribuan.join('.');
-        }
-
-        rupiah = split[1] !== undefined ? rupiah + ',' + split[1] : rupiah;
-        return prefix + rupiah;
+    if (ribuan) {
+        let separator = sisa ? '.' : '';
+        rupiah += separator + ribuan.join('.');
     }
 
+    rupiah = split[1] !== undefined ? rupiah + ',' + split[1] : rupiah;
+    return prefix + rupiah;
+}
 
-    document.querySelectorAll('[id^="editHargaprogram-"]').forEach(function(input) {
+// Format harga pada input edit program
+document.querySelectorAll('[id^="editHargaprogram-"]').forEach(function(input) {
     input.addEventListener('input', function(e) {
         let value = e.target.value.replace(/[^,\d]/g, '');
         if (value) {
@@ -140,10 +93,82 @@
         }
     });
 
-    // Format harga on page load to display correctly
+    // Format harga on page load
     let initialValue = input.value.replace(/[^,\d]/g, '');
     if (initialValue) {
         input.value = formatRupiah(initialValue);
     }
 });
+
+// Function to load "Tambah Program" form dynamically
+function loadTambahProgramForm() {
+    // Hide the "Tambah Program" button
+    document.getElementById('btnTambahProgram').style.display = 'none';
+
+    // Hide the program table content
+    document.getElementById('programTableContent').style.display = 'none';
+
+    // Fetch and load the form for adding a new program
+    fetch('<?= base_url('home/t_program') ?>') // Endpoint for adding program form
+        .then(response => response.text()) // Convert response to HTML
+        .then(data => {
+            // Display the form inside the dynamicContent div
+            document.getElementById('dynamicContent').innerHTML = data;
+
+            // Add a back button
+            let backButton = `
+                <button class="btn btn-secondary" onclick="backToProgramList()">
+                    <i class="fe fe-arrow-left"></i> Back to Program List
+                </button>
+            `;
+            document.getElementById('dynamicContent').insertAdjacentHTML('beforeend', backButton);
+        })
+        .catch(error => {
+            console.error('Error:', error); // Log any errors
+            alert('Terjadi kesalahan saat memuat form tambah program.');
+        });
+}
+
+
+// Function to load "Edit Program" form dynamically
+function loadEditProgramForm(id_program) {
+    // Hide the "Tambah Program" button
+    document.getElementById('btnTambahProgram').style.display = 'none';
+
+    // Hide the program table content
+    document.getElementById('programTableContent').style.display = 'none';
+
+    // Fetch and load the edit form for the program
+    fetch('<?= base_url('home/e_program') ?>/' + id_program) // Endpoint for editing program
+        .then(response => response.text()) // Convert response to HTML
+        .then(data => {
+            // Display the edit form inside the dynamicContent div
+            document.getElementById('dynamicContent').innerHTML = data;
+
+            // Add a back button
+            let backButton = `
+                <button class="btn btn-secondary" onclick="backToProgramList()">
+                    <i class="fe fe-arrow-left"></i> Back to Program List
+                </button>
+            `;
+            document.getElementById('dynamicContent').insertAdjacentHTML('beforeend', backButton);
+        })
+        .catch(error => {
+            console.error('Error:', error); // Log any errors
+            alert('Terjadi kesalahan saat memuat form edit program.');
+        });
+}
+
+// Function to return to the program list
+function backToProgramList() {
+    // Show the "Tambah Program" button again
+    document.getElementById('btnTambahProgram').style.display = 'inline-block';
+
+    // Show the program table content again
+    document.getElementById('programTableContent').style.display = 'block';
+
+    // Clear the dynamic content area (form area)
+    document.getElementById('dynamicContent').innerHTML = '';
+}
+
 </script>

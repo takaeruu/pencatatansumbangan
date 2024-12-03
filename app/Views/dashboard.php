@@ -211,13 +211,18 @@
                         <div class="card">
                             <div class="card-body py-4 px-5">
                                 <div class="d-flex align-items-center">
-                                    <div class="avatar avatar-xl">
-                                        <img src="assets/images/faces/1.jpg" alt="Face 1">
-                                    </div>
-                                    <div class="ms-3 name">
-                                        <h5 class="font-bold">John Duck</h5>
-                                        <h6 class="text-muted mb-0">@johnducky</h6>
-                                    </div>
+                                   
+                                <div class="d-flex align-items-center">
+                                <a href="<?= base_url('home/profile') ?>" class="d-flex align-items-center text-decoration-none text-dark">
+    <div class="me-3">
+        <i class="fas fa-user-circle fa-2x"></i> <!-- Profile Icon -->
+    </div>
+    <div class="ms-3 name">
+        <h5 class="font-bold"><?= session()->get('nama') ?></h5>
+    </div>
+</a>
+
+
                                 </div>
                             </div>
                         </div>

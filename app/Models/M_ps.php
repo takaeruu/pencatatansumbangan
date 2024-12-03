@@ -108,9 +108,33 @@ public function join22($tabel1, $tabel2, $on)
                     ->get()
                     ->getResult(); // Mengembalikan hasil sebagai array objek
 }
+protected $table = 'user'; // Nama tabel
+protected $primaryKey = 'id_user';  // Primary key tabel
+protected $allowedFields = ['password'];
+public function resetPassword($id)
+    {
+        // Mengatur password menjadi '1' dan mengenkripsinya dengan MD5
+        $hashedPassword = md5('1'); // Password yang diatur menjadi '1' setelah di-hash
+        return $this->update($id, ['password' => $hashedPassword]);
+    }
 
+    public function getById($id)
+    {
+        return $this->db->table('user')
+            ->where('id_user', $id)
+            ->get()
+            ->getRow();
+    }
 
-
+    public function getPassword($userId)
+    {
+        return $this->db->table('user')
+            ->select('password')
+            ->where('id_user', $userId)
+            ->get()
+            ->getRow()
+            ->password;
+    }
 
 
 public function get_surat_masuk_with_access()
